@@ -1,0 +1,278 @@
+{
+  "name": "AdaptIQ Learning + Reminder Workflow",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "User Sign In",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [120, 220],
+      "parameters": {}
+    },
+    {
+      "id": "2",
+      "name": "Load Profile",
+      "type": "n8n-nodes-base.function",
+      "position": [340, 220],
+      "parameters": {
+        "functionCode": "// Load activeProfileId and profile-scoped curriculum"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Render Dashboard",
+      "type": "n8n-nodes-base.function",
+      "position": [560, 220],
+      "parameters": {
+        "functionCode": "// Show stats, weak concepts, adaptive recommendation"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Practice Session",
+      "type": "n8n-nodes-base.function",
+      "position": [780, 220],
+      "parameters": {
+        "functionCode": "// Generate chapter/subject-scoped quiz and collect answers"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Answer Correct?",
+      "type": "n8n-nodes-base.if",
+      "position": [1020, 220],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Show Explanation",
+      "type": "n8n-nodes-base.function",
+      "position": [1240, 140],
+      "parameters": {
+        "functionCode": "// Correct answer feedback and next question"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Run Diagnosis Engine",
+      "type": "n8n-nodes-base.function",
+      "position": [1240, 300],
+      "parameters": {
+        "functionCode": "// Map error -> missing concept -> prerequisite chain"
+      }
+    },
+    {
+      "id": "8",
+      "name": "Update Knowledge Map",
+      "type": "n8n-nodes-base.function",
+      "position": [1460, 300],
+      "parameters": {
+        "functionCode": "// Highlight weak/missing nodes and recommended path"
+      }
+    },
+    {
+      "id": "9",
+      "name": "AI Study Companion",
+      "type": "n8n-nodes-base.function",
+      "position": [1680, 300],
+      "parameters": {
+        "functionCode": "// Context-aware hints/explanations by subject/chapter/concept"
+      }
+    },
+    {
+      "id": "10",
+      "name": "Progress Analytics",
+      "type": "n8n-nodes-base.function",
+      "position": [1900, 220],
+      "parameters": {
+        "functionCode": "// Aggregate mastery, accuracy, trends"
+      }
+    },
+    {
+      "id": "11",
+      "name": "Daily Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [780, 520],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyDay"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "12",
+      "name": "Check Inactive Users",
+      "type": "n8n-nodes-base.function",
+      "position": [1020, 520],
+      "parameters": {
+        "functionCode": "// Inactive >=2 days => first reminder; then every 7 days"
+      }
+    },
+    {
+      "id": "13",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1240, 520],
+      "parameters": {
+        "url": "https://api.resend.com/emails",
+        "method": "POST"
+      }
+    },
+    {
+      "id": "14",
+      "name": "Update Reminder State",
+      "type": "n8n-nodes-base.function",
+      "position": [1460, 520],
+      "parameters": {
+        "functionCode": "// Upsert user_reminder_state(last_known_activity_at,last_reminder_sent_at,reminder_count)"
+      }
+    }
+  ],
+  "connections": {
+    "User Sign In": {
+      "main": [
+        [
+          {
+            "node": "Load Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Profile": {
+      "main": [
+        [
+          {
+            "node": "Render Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Practice Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Practice Session": {
+      "main": [
+        [
+          {
+            "node": "Answer Correct?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Correct?": {
+      "main": [
+        [
+          {
+            "node": "Show Explanation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Run Diagnosis Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Diagnosis Engine": {
+      "main": [
+        [
+          {
+            "node": "Update Knowledge Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Knowledge Map": {
+      "main": [
+        [
+          {
+            "node": "AI Study Companion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Study Companion": {
+      "main": [
+        [
+          {
+            "node": "Progress Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Cron": {
+      "main": [
+        [
+          {
+            "node": "Check Inactive Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Inactive Users": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder Email": {
+      "main": [
+        [
+          {
+            "node": "Update Reminder State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "adaptiq-workflow-v1"
+}
+
