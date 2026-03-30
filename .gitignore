@@ -17,6 +17,7 @@ node_modules
 .vercel/
 .env
 .env.*
+!.env.local.example
 *.tsbuildinfo
 tmp_hindsight_smoke.ps1
 .DS_Store
